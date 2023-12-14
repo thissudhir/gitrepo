@@ -1,0 +1,127 @@
+<div class="flex flex-col min-h-screen bg-red-20">
+  <!-- Search bar section starts here  -->
+  <nav class="grid place-items-center bg-red-50">
+    <form  class="flex w-2/3 justify-center my-9" [formGroup]="searchGroup" >
+      <div class="flex justify-center w-full mx-10">
+        <input class="block w-1/2 h-10 m-1 rounded-md border-0 py-1.5 pl-2 pr-20 text-gray-900 ring-1 ring-inset ring-gray-300 placeholder:text-gray-400  focus:ring-2 focus:ring-inset focus:ring-sky-800 sm:text-sm sm:leading-6" type="text" placeholder="Username" formControlName="login">
+        <button [disabled]="searchGroup.invalid" class="block w-24 h-10 bg-sky-950 text-white rounded-md border-2 m-1 disabled:bg-blue-400 " (click)="search()">Search</button>
+      </div>
+    </form>
+  </nav>
+    
+  <!-- Profile Section starts here -->
+  <div class="flex justify-center w-2/3">
+
+    <!-- Skeleton Loader -->
+    <div *ngIf="ProfileLoaded" class="flex flex-col w-1/2 justify-center">
+      <div class="flex">
+        <ngx-skeleton-loader class="w-1/5 m-1 " count="1" appearance="circle" animation="pulse" [theme]="{
+          height: '80px',
+          width: '80px',
+          'background-color':'rgb(209 213 219)'
+       }"></ngx-skeleton-loader>
+       <ngx-skeleton-loader class="w-4/5 m-1 ml-3 " count="1" appearance="line" animation="pulse" [theme]="{
+         height: '80px',
+         'background-color':'rgb(209 213 219)'
+       }"></ngx-skeleton-loader>
+      </div>
+      <div>
+        <ngx-skeleton-loader count="1" appearance="line" animation="pulse" [theme]="{
+          height: '30px',
+          'background-color':'rgb(209 213 219)'
+        }"></ngx-skeleton-loader>
+      </div>
+      <div>
+        <ngx-skeleton-loader count="1" appearance="line" animation="pulse" [theme]="{
+          height: '30px',
+          'background-color':'rgb(209 213 219)'
+        }"></ngx-skeleton-loader>
+      </div>
+      <div class="w-2/3">
+        <ngx-skeleton-loader count="1" appearance="line" animation="pulse" [theme]="
+        {
+          'background-color':'rgb(209 213 219)'
+        }"></ngx-skeleton-loader>
+      </div>
+    </div>
+    <!-- Profile section starts here -->
+    <div *ngIf="errorMessage.length == 0 && !ProfileLoaded && profile.login.length" class="flex w-2/3">
+      <div class="flex flex-col justify-center w-1/2 mr-3">
+        <img class="p-2 w-40 h-40 border-2 rounded-full border-slate-300	drop-shadow-md mx-10" alt="Profile Picture" src={{profile.avatar_url}}>
+        <div class="flex mt-4">
+          <ng-icon name="heroLink" class="text-xl mr-2 font-semibold"></ng-icon>
+          <a href={{profile.html_url}} class="block hover:underline font-semibold">{{profile.html_url}}</a>
+        </div>
+      </div>
+      <div class="flex flex-col justify-evenly w-full">
+        <p class="font-semibold tracking-wide text-2xl">{{profile.name}}</p>
+        <p class="line-clamp-3 text-slate-600	font-medium">{{profile.bio}}
+          <ng-container *ngIf="!profile.bio">
+            No Bio
+          </ng-container></p>
+        <p>
+          <ng-container *ngIf="profile.twitter_username">
+                        <a
+              [href]="'https://twitter.com/' + profile.twitter_username"
+              target="_blank"
+              rel="noopener noreferrer"
+              >{{ "https://twitter.com/" + profile.twitter_username }}</a
+            >
+          </ng-container>
+          <ng-container *ngIf="!profile.twitter_username">
+            No Twitter account
+          </ng-container>
+        </p>
+        <div class="flex" *ngIf="profile.location != null">
+          <ng-icon name="ionLocation" class="text-2xl text-slate-800"></ng-icon>
+          <p class="ml-3 text-slate-700	font-medium">{{profile.location}}</p>
+        </div>
+      </div>
+    </div>
+    <!-- Error message for No Profile  -->
+    <div *ngIf="errorMessage.length">
+        <p class="text-red-600 text-xl text-bold">No Profile Found</p>
+    </div>
+  </div>
+
+  <!-- Repositiories Section starts here -->
+  <div *ngIf="errorMessage.length == 0 && !ProfileLoaded && profile.public_repos > 0 && profile.login != '' else NoPublicRepos" class="grid place-items-center">
+    <h1 class="tracking-wide text-xl font-semibold text-orange-700 mt-10">Public Repositiories</h1>
+    <div class="w-1/2 flex justify-center m-4">
+    </div>
+    <div class="flex justify-evenly w-full flex-wrap mt-5">
+      <div *ngFor="let repository of repositories">
+        <div class="w-96 h-48 m-4 p-3 border-2 border-sky-900 rounded-md flex flex-col justify-around">
+          <a href={{repository.html_url}} class="text-2xl tracking-wide text-sky-600 font-medium hover:text-sky-800">{{repository.name}}</a>
+          <p class="line-clamp-2 text-slate-700 text-md mt-5">{{repository.description}}</p>
+          <div class="flex flex-wrap">
+            <div *ngFor="let topic of repository.topics" class="bg-sky-500 text-white m-1 p-2 rounded-md">
+              {{topic}}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- Pagination -->
+    <div class="w-2/3 flex justify-around my-5">
+      <button (click)="onnClickPrevious()" [disabled]="pageNumber == 1" class="bg-sky-500 text-white font-medium p-2 rounded-md hover:bg-sky-600 disabled:bg-gray-400 ">
+        << Previous
+      </button>
+      <button (click)="onClickNext()" [disabled]="pageNumber == totalPages" class="bg-sky-500 text-white font-medium p-2 rounded-md hover:bg-sky-600 disabled:bg-gray-400 ">
+        Next >>
+      </button>
+    </div>
+  </div>
+
+  <!-- Error message for No Public Repositiories  -->
+  <ng-template #NoPublicRepos>
+    <p *ngIf="profile.login.length > 0" class="tracking-wide text-xl font-semibold text-orange-700 mt-10">No Public Repositiories</p>
+  </ng-template>
+  
+  <footer class="bg-red-50 p-6 mt-auto">
+    <nav class="flex items-center justify-between flex-wrap">
+        Made with ❤️ by Abhishek
+    </nav>
+  </footer>
+
+</div>
